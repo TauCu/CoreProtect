@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import net.coreprotect.utility.EntityUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.BlockState;
 
 import net.coreprotect.CoreProtect;
@@ -31,7 +32,8 @@ public class EntityKillLogger {
                 return;
             }
 
-            CoreProtectPreLogEvent event = new CoreProtectPreLogEvent(user);
+            Location initialLocation = new Location(block.getWorld(), block.getX(), block.getY(), block.getZ());
+            CoreProtectPreLogEvent event = new CoreProtectPreLogEvent(user, initialLocation);
             if (Config.getGlobal().API_ENABLED && !Bukkit.isPrimaryThread()) {
                 CoreProtect.getInstance().getServer().getPluginManager().callEvent(event);
             }
@@ -41,11 +43,12 @@ public class EntityKillLogger {
             }
 
             int userId = UserStatement.getId(preparedStmt, event.getUser(), true);
-            int wid = WorldUtils.getWorldId(block.getWorld().getName());
+            Location eventLocation = event.getLocation();
+            int wid = WorldUtils.getWorldId(eventLocation.getWorld().getName());
             int time = (int) (System.currentTimeMillis() / 1000L);
-            int x = block.getX();
-            int y = block.getY();
-            int z = block.getZ();
+            int x = eventLocation.getBlockX();
+            int y = eventLocation.getBlockY();
+            int z = eventLocation.getBlockZ();
             int entity_key = 0;
 
             ResultSet resultSet = EntityStatement.insert(preparedStmt2, time, data);
